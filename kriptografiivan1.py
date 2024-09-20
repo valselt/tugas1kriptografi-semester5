@@ -181,13 +181,16 @@ def run_encryption(method, key, text):
                 with open(output_file, 'w') as file:
                     file.write(result)
                 messagebox.showinfo("Info", "Hasil telah disimpan.")
+        else:
+            # Tampilkan hasil enkripsi hanya jika "Tidak" dipilih
+            messagebox.showinfo("Hasil Enkripsi", f"Hasil: {result}")
 
-                # Tambahkan popup untuk mengulang atau keluar
-                repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
-                if repeat:
-                    reset_program()  # Fungsi untuk mengatur ulang tampilan
-                else:
-                    root.quit()  # Keluar dari aplikasi
+        # Tambahkan popup untuk mengulang atau keluar
+        repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
+        if repeat:
+            reset_program()  # Fungsi untuk mengatur ulang tampilan
+        else:
+            root.quit()  # Keluar dari aplikasi
 
 def run_decryption(method, key, text):
     result = process(method, "Decrypt", key, text)
@@ -199,13 +202,17 @@ def run_decryption(method, key, text):
                 with open(output_file, 'w') as file:
                     file.write(result)
                 messagebox.showinfo("Info", "Hasil telah disimpan.")
+        else:
+            # Tampilkan hasil dekripsi hanya jika "Tidak" dipilih
+            messagebox.showinfo("Hasil Dekripsi", f"Hasil: {result}")
 
-                # Tambahkan popup untuk mengulang atau keluar
-                repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
-                if repeat:
-                    reset_program()  # Fungsi untuk mengatur ulang tampilan
-                else:
-                    root.quit()  # Keluar dari aplikasi
+        # Tambahkan popup untuk mengulang atau keluar
+        repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
+        if repeat:
+            reset_program()  # Fungsi untuk mengatur ulang tampilan
+        else:
+            root.quit()  # Keluar dari aplikasi
+
 
 def upload_file_action(method):
     text = upload_file()  # Mengambil konten dari file
