@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, simpledialog
 
 # Fungsi untuk Vigenere Cipher
 def vigenere_encrypt(plaintext, key):
@@ -30,7 +30,7 @@ def vigenere_decrypt(ciphertext, key):
 
 # Fungsi untuk Playfair Cipher
 def create_playfair_matrix(key):
-    alphabet = "abcdefghiklmnopqrstuvwxyz"  # Tidak termasuk 'j'
+    alphabet = "abcdefghiklmnopqrstuvwxyz"
     matrix = []
     key = key.lower().replace("j", "i")
     for char in key:
@@ -95,22 +95,7 @@ def playfair_decrypt(ciphertext, key):
             plaintext += matrix[row2][col1]
     return plaintext
 
-# Fungsi untuk Hill Cipher (disederhanakan)
-def hill_encrypt(plaintext, key):
-    # Implementasi Hill Cipher akan ditambahkan di sini
-    return "Hill cipher belum diimplementasikan."
-
-def hill_decrypt(ciphertext, key):
-    # Implementasi Hill Cipher akan ditambahkan di sini
-    return "Hill cipher belum diimplementasikan."
-
-# Fungsi untuk mengencrypt atau mendekripsi
-def process():
-    method = method_var.get()
-    mode = mode_var.get()
-    key = key_entry.get()
-    text = input_text.get("1.0", tk.END).strip()
-
+def process(method, mode, key, text):
     if len(key) < 12:
         messagebox.showerror("Error", "Kunci harus minimal 12 karakter.")
         return
@@ -119,37 +104,64 @@ def process():
         result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
     elif method == "Playfair":
         result = playfair_encrypt(text, key) if mode == "Encrypt" else playfair_decrypt(text, key)
-    else:
-        result = hill_encrypt(text, key) if mode == "Encrypt" else hill_decrypt(text, key)
 
-    output_text.delete("1.0", tk.END)
-    output_text.insert(tk.END, result)
+    return result
+
+def upload_file():
+    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+    if file_path:
+        with open(file_path, 'r') as file:
+            content = file.read()
+            return content
+    return ""
+
+def main():
+    method = simpledialog.askstring("Metode Enkripsi", "Pilih metode (Vigenere/Playfair):")
+    if method not in ["Vigenere", "Playfair"]:
+        messagebox.showerror("Error", "Metode tidak valid.")
+        return
+
+    mode = simpledialog.askstring("Mode", "Pilih mode (Encrypt/Decrypt):")
+    if mode not in ["Encrypt", "Decrypt"]:
+        messagebox.showerror("Error", "Mode tidak valid.")
+        return
+
+    key = simpledialog.askstring("Kunci", "Masukkan kunci (minimal 12 karakter):")
+    if key is None or len(key) < 12:
+        messagebox.showerror("Error", "Kunci tidak valid.")
+        return
+
+    input_choice = simpledialog.askstring("Input", "Masukkan input dari file (f) atau langsung (l):")
+    if input_choice == 'f':
+        text = upload_file()
+        if not text:
+            messagebox.showerror("Error", "Tidak ada konten dalam file.")
+            return
+    elif input_choice == 'l':
+        text = simpledialog.askstring("Input Teks", "Masukkan teks:")
+        if text is None:
+            return
+    else:
+        messagebox.showerror("Error", "Pilihan input tidak valid.")
+        return
+
+    result = process(method, mode, key, text)
+
+    if result:
+        save_choice = messagebox.askyesno("Simpan Hasil", "Apakah Anda ingin menyimpan hasilnya ke file?")
+        if save_choice:
+            output_file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+            if output_file:
+                with open(output_file, 'w') as file:
+                    file.write(result)
+                messagebox.showinfo("Info", "Hasil telah disimpan.")
+            else:
+                messagebox.showerror("Error", "Gagal menyimpan hasil.")
+        else:
+            messagebox.showinfo("Hasil", f"Hasil:\n{result}")
 
 # GUI Setup
 root = tk.Tk()
-root.title("Cipher Encryption/Decryption")
-
-method_var = tk.StringVar(value="Vigenere")
-mode_var = tk.StringVar(value="Encrypt")
-
-tk.Label(root, text="Metode:").grid(row=0, column=0)
-tk.OptionMenu(root, method_var, "Vigenere", "Playfair", "Hill").grid(row=0, column=1)
-
-tk.Label(root, text="Mode:").grid(row=1, column=0)
-tk.OptionMenu(root, mode_var, "Encrypt", "Decrypt").grid(row=1, column=1)
-
-tk.Label(root, text="Kunci:").grid(row=2, column=0)
-key_entry = tk.Entry(root)
-key_entry.grid(row=2, column=1)
-
-tk.Label(root, text="Input:").grid(row=3, column=0)
-input_text = tk.Text(root, height=10, width=50)
-input_text.grid(row=3, column=1)
-
-tk.Button(root, text="Proses", command=process).grid(row=4, columnspan=2)
-
-tk.Label(root, text="Output:").grid(row=5, column=0)
-output_text = tk.Text(root, height=10, width=50)
-output_text.grid(row=5, column=1)
-
+root.withdraw()  # Sembunyikan jendela utama
+main()
 root.mainloop()
