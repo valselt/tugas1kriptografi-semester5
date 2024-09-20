@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 import numpy as np
 
-# Fungsi untuk Vigenere Cipher
+
 def vigenere_encrypt(plaintext, key):
     key = key.lower()
     ciphertext = ""
@@ -29,7 +29,6 @@ def vigenere_decrypt(ciphertext, key):
             plaintext += ciphertext[i]
     return plaintext
 
-# Fungsi untuk Playfair Cipher
 def create_playfair_matrix(key):
     alphabet = "abcdefghiklmnopqrstuvwxyz"
     matrix = []
@@ -63,15 +62,15 @@ def playfair_encrypt(plaintext, key):
         
         if i + 1 < len(plaintext):
             b = plaintext[i + 1]
-            if a == b:  # Jika karakter sama, gunakan 'x'
+            if a == b:  
                 b = 'x'
                 plaintext_pairs.append(a + b)
-                i += 1  # Lewati satu karakter
+                i += 1  
             else:
                 plaintext_pairs.append(a + b)
-                i += 2  # Lewati dua karakter
+                i += 2 
         else:
-            # Jika hanya satu karakter tersisa, tambahkan 'x'
+            
             plaintext_pairs.append(a + 'x')
             i += 1
 
@@ -102,14 +101,14 @@ def playfair_decrypt(ciphertext, key):
     while i < len(ciphertext):
         a = ciphertext[i]
         if not a.isalpha():
-            plaintext += a  # Pertahankan karakter non-alfabet
+            plaintext += a 
             i += 1
             continue
         
         if i + 1 < len(ciphertext):
             b = ciphertext[i + 1]
         else:
-            b = 'x'  # Jika hanya ada satu huruf, gantikan dengan 'x'
+            b = 'x'  
 
         row1, col1 = find_position(matrix, a)
         row2, col2 = find_position(matrix, b)
@@ -125,12 +124,11 @@ def playfair_decrypt(ciphertext, key):
                 plaintext += matrix[row1][col2]
                 plaintext += matrix[row2][col1]
 
-        i += 2  # Lewati dua karakter
+        i += 2  
 
     return plaintext
 
 
-# Fungsi untuk Hill Cipher
 def hill_encrypt(plaintext, key):
     key_matrix = np.array(key).reshape(2, 2)
     plaintext_vector = np.array([ord(c) - ord('a') for c in plaintext.lower() if c.isalpha()]).reshape(-1, 2)
@@ -142,7 +140,6 @@ def hill_decrypt(ciphertext, key):
     key_matrix = np.array(key).reshape(2, 2)
     det = int(np.round(np.linalg.det(key_matrix))) % 26
 
-    # Cek apakah determinan valid
     if det == 0 or gcd(det, 26) != 1:
         raise ValueError("Determinant is not invertible under modulo 26. Please use a different key.")
 
@@ -160,24 +157,24 @@ def gcd(a, b):
     return a
 
 def process(method, mode, key, text):
-    # Hanya ambil huruf dari kunci
+    
     filtered_key = ''.join(filter(str.isalpha, key))
     
     if len(filtered_key) < 4:
         messagebox.showerror("Error", "Kunci harus terdiri dari minimal 4 huruf.")
         return
 
-    # Ambil 4 karakter pertama dari kunci untuk matriks 2x2
+    
     key_matrix = np.array([ord(c) - ord('a') for c in filtered_key[:4]]).reshape(2, 2)
 
-    # Periksa determinan untuk Hill Cipher
+    
     if method == "Hill":
         det = int(np.round(np.linalg.det(key_matrix))) % 26
         if det == 0 or gcd(det, 26) != 1:
             messagebox.showerror("Error", "Determinant is not invertible under modulo 26. Please use a different key.")
             return
 
-    # Proses untuk setiap cipher
+    
     if method == "Vigenere":
         result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
     elif method == "Playfair":
@@ -208,15 +205,15 @@ def run_encryption(method, key, text):
                     file.write(result)
                 messagebox.showinfo("Info", "Hasil telah disimpan.")
         else:
-            # Tampilkan hasil enkripsi hanya jika "Tidak" dipilih
+            
             messagebox.showinfo("Hasil Enkripsi", f"Hasil: {result}")
 
-        # Tambahkan popup untuk mengulang atau keluar
+        
         repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
         if repeat:
-            reset_program()  # Fungsi untuk mengatur ulang tampilan
+            reset_program()  
         else:
-            root.quit()  # Keluar dari aplikasi
+            root.quit()  
 
 def run_decryption(method, key, text):
     result = process(method, "Decrypt", key, text)
@@ -229,78 +226,75 @@ def run_decryption(method, key, text):
                     file.write(result)
                 messagebox.showinfo("Info", "Hasil telah disimpan.")
         else:
-            # Tampilkan hasil dekripsi hanya jika "Tidak" dipilih
+            
             messagebox.showinfo("Hasil Dekripsi", f"Hasil: {result}")
 
-        # Tambahkan popup untuk mengulang atau keluar
+        
         repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
         if repeat:
-            reset_program()  # Fungsi untuk mengatur ulang tampilan
+            reset_program()  
         else:
-            root.quit()  # Keluar dari aplikasi
+            root.quit()  
 
 
 def upload_file_action(method):
-    text = upload_file()  # Mengambil konten dari file
+    text = upload_file()  
     if not text:
         messagebox.showerror("Error", "Tidak ada konten dalam file.")
         return
     
-    choose_mode(method, text)  # Panggil fungsi untuk memilih mode
- # Panggil fungsi untuk memilih mode
+    choose_mode(method, text)  
+ 
 
 def input_text_action(method):
     global text
     text = simpledialog.askstring("Input Teks", "Masukkan teks:")
     if text is None:
         return
-    choose_mode(method, text)  # Panggil fungsi untuk memilih mode
-  # Panggil fungsi untuk memilih mode
+    choose_mode(method, text)   
+ 
 
 def choose_mode(method, text):
-    # Menghapus pilihan input sebelumnya
+    
     for widget in root.pack_slaves():
         if isinstance(widget, tk.Button):
             widget.destroy()
 
-    # Hapus input_label jika ada
+    
     if input_label:
         input_label.pack_forget()
 
-    # Tampilkan label untuk memilih mode
     mode_label = tk.Label(root, text="Pilih mode (Encrypt/Decrypt)", font=("Arial", 12))
     mode_label.pack(pady=10)
 
-    # Tombol untuk Enkripsi
     encrypt_button = tk.Button(root, text="Encrypt", command=lambda: run_encryption(method, key, text))
     encrypt_button.pack(pady=5)
 
-    # Tombol untuk Dekripsi
     decrypt_button = tk.Button(root, text="Decrypt", command=lambda: run_decryption(method, key, text))
     decrypt_button.pack(pady=5)
 
 
 def choose_method(method):
-    global key,input_label  # Menyimpan key ke variabel global
+    global key,input_label  
     key = simpledialog.askstring("Kunci", "Masukkan kunci (minimal 12 karakter):")
     if key is None or len(key) < 12:
         messagebox.showerror("Error", "Kunci tidak valid.")
         return
 
-    # Menghapus pilihan sebelumnya
+    
     for widget in root.pack_slaves():
         if isinstance(widget, tk.Button):
             widget.destroy()
 
-    # Hapus welcome_label
+    
     if welcome_label :
         welcome_label.pack_forget()
 
-    # Menampilkan label untuk memilih input
+    
     input_label = tk.Label(root, text="Masukkan input dari file (f) atau langsung (l):", font=("Arial", 12))
     input_label.pack(pady=10)
 
-    # Tombol untuk memilih input
+    
     upload_button = tk.Button(root, text="Upload File", command=lambda: upload_file_action(method))
     upload_button.pack(side=tk.LEFT, padx=5)
 
@@ -309,12 +303,12 @@ def choose_method(method):
 
 def reset_program():
     for widget in root.pack_slaves():
-        widget.destroy()  # Hapus semua widget di jendela
-    main()  # Jalankan kembali fungsi main untuk memulai ulang aplikasi
+        widget.destroy()  
+    main()  
 
 
 def main():
-    global root, welcome_label  # Menandai root sebagai variabel global
+    global root, welcome_label  
     root = tk.Tk()
     root.title("Kriptografi")
     
@@ -328,5 +322,4 @@ def main():
 
     root.mainloop()
 
-# Menjalankan aplikasi
 main()
