@@ -1,5 +1,5 @@
-# Program Enkripsi dan Dekripsi dengan Vigenere, Playfair, dan Hill Cipher
-# Tanpa library eksternal
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 # Fungsi untuk Vigenere Cipher
 def vigenere_encrypt(plaintext, key):
@@ -40,6 +40,13 @@ def create_playfair_matrix(key):
         if char not in matrix:
             matrix.append(char)
     return [matrix[i:i + 5] for i in range(0, len(matrix), 5)]
+
+def find_position(matrix, char):
+    for row in range(5):
+        for col in range(5):
+            if matrix[row][col] == char:
+                return row, col
+    return None, None
 
 def playfair_encrypt(plaintext, key):
     matrix = create_playfair_matrix(key)
@@ -88,141 +95,61 @@ def playfair_decrypt(ciphertext, key):
             plaintext += matrix[row2][col1]
     return plaintext
 
-def find_position(matrix, char):
-    for row in range(5):
-        for col in range(5):
-            if matrix[row][col] == char:
-                return row, col
-    return None, None
-
-# Fungsi untuk Hill Cipher
+# Fungsi untuk Hill Cipher (disederhanakan)
 def hill_encrypt(plaintext, key):
-    # Kunci harus berupa matriks 2x2 atau 3x3
-    matrix_size = int(len(key) ** 0.5)
-    if matrix_size * matrix_size != len(key):
-        return "Invalid key length for Hill Cipher."
-    key_matrix = create_key_matrix(key, matrix_size)
-    
-    # Memastikan panjang plainteks kelipatan matriks
-    while len(plaintext) % matrix_size != 0:
-        plaintext += 'x'
-    
-    ciphertext = ""
-    for i in range(0, len(plaintext), matrix_size):
-        block = plaintext[i:i + matrix_size]
-        block_vector = [ord(char) - ord('a') for char in block]
-        encrypted_vector = [(sum(key_matrix[row][col] * block_vector[col] for col in range(matrix_size)) % 26)
-                            for row in range(matrix_size)]
-        ciphertext += ''.join(chr(num + ord('a')) for num in encrypted_vector)
-    return ciphertext
+    # Implementasi Hill Cipher akan ditambahkan di sini
+    return "Hill cipher belum diimplementasikan."
 
 def hill_decrypt(ciphertext, key):
-    matrix_size = int(len(key) ** 0.5)
-    if matrix_size * matrix_size != len(key):
-        return "Invalid key length for Hill Cipher."
-    key_matrix = create_key_matrix(key, matrix_size)
-    det = determinant(key_matrix)
-    if det == 0:
-        return "Key matrix is not invertible."
-    inv_matrix = inverse_matrix(key_matrix, det, 26)
-    
-    plaintext = ""
-    for i in range(0, len(ciphertext), matrix_size):
-        block = ciphertext[i:i + matrix_size]
-        block_vector = [ord(char) - ord('a') for char in block]
-        decrypted_vector = [(sum(inv_matrix[row][col] * block_vector[col] for col in range(matrix_size)) % 26)
-                            for row in range(matrix_size)]
-        plaintext += ''.join(chr(num + ord('a')) for num in decrypted_vector)
-    return plaintext
+    # Implementasi Hill Cipher akan ditambahkan di sini
+    return "Hill cipher belum diimplementasikan."
 
-def create_key_matrix(key, size):
-    return [[ord(key[i * size + j]) % 97 for j in range(size)] for i in range(size)]
+# Fungsi untuk mengencrypt atau mendekripsi
+def process():
+    method = method_var.get()
+    mode = mode_var.get()
+    key = key_entry.get()
+    text = input_text.get("1.0", tk.END).strip()
 
-def determinant(matrix):
-    if len(matrix) == 2:
-        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
-    elif len(matrix) == 3:
-        return (matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
-                matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0]) +
-                matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]))
-    else:
-        return 0
-
-def inverse_matrix(matrix, det, mod):
-    size = len(matrix)
-    adjugate = [[0] * size for _ in range(size)]
-    for i in range(size):
-        for j in range(size):
-            minor = [[matrix[m][n] for n in range(size) if n != j] for m in range(size) if m != i]
-            cofactor = determinant(minor) * ((-1) ** (i + j))
-            adjugate[j][i] = cofactor % mod
-    det_inv = pow(det, -1, mod)
-    return [[(adjugate[i][j] * det_inv) % mod for j in range(size)] for i in range(size)]
-
-# Fungsi untuk membaca dan menulis file
-def read_file(file_path):
-    with open(file_path, 'r') as file:
-        return file.read().strip()
-
-def write_file(file_path, content):
-    with open(file_path, 'w') as file:
-        file.write(content)
-
-# Main program
-def main():
-    print("Pilih metode enkripsi/dekripsi:")
-    print("1. Vigenere Cipher")
-    print("2. Playfair Cipher")
-    print("3. Hill Cipher")
-    choice = input("Masukkan pilihan (1/2/3): ")
-
-    mode = input("Pilih mode (encrypt/decrypt): ").strip().lower()
-    if mode not in ["encrypt", "decrypt"]:
-        print("Mode tidak valid.")
-        return
-
-    key = input("Masukkan kunci (minimal 12 karakter): ").strip()
     if len(key) < 12:
-        print("Kunci harus minimal 12 karakter.")
+        messagebox.showerror("Error", "Kunci harus minimal 12 karakter.")
         return
 
-    input_choice = input("Masukkan input dari file (f) atau langsung (d): ").strip().lower()
-    if input_choice == 'f':
-        input_file = input("Masukkan path file input: ").strip()
-        try:
-            text = read_file(input_file)
-        except FileNotFoundError:
-            print("File tidak ditemukan.")
-            return
+    if method == "Vigenere":
+        result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
+    elif method == "Playfair":
+        result = playfair_encrypt(text, key) if mode == "Encrypt" else playfair_decrypt(text, key)
     else:
-        text = input("Masukkan teks: ").strip()
+        result = hill_encrypt(text, key) if mode == "Encrypt" else hill_decrypt(text, key)
 
-    if choice == "1":
-        if mode == "encrypt":
-            result = vigenere_encrypt(text, key)
-        else:
-            result = vigenere_decrypt(text, key)
-    elif choice == "2":
-        if mode == "encrypt":
-            result = playfair_encrypt(text, key)
-        else:
-            result = playfair_decrypt(text, key)
-    elif choice == "3":
-        if mode == "encrypt":
-            result = hill_encrypt(text, key)
-        else:
-            result = hill_decrypt(text, key)
-    else:
-        print("Pilihan tidak valid.")
-        return
+    output_text.delete("1.0", tk.END)
+    output_text.insert(tk.END, result)
 
-    output_choice = input("Simpan hasil ke file (y/n)? ").strip().lower()
-    if output_choice == 'y':
-        output_file = input("Masukkan path file output: ").strip()
-        write_file(output_file, result)
-        print("Hasil telah disimpan ke", output_file)
-    else:
-        print("Hasil:", result)
+# GUI Setup
+root = tk.Tk()
+root.title("Cipher Encryption/Decryption")
 
-if __name__ == "__main__":
-    main()
+method_var = tk.StringVar(value="Vigenere")
+mode_var = tk.StringVar(value="Encrypt")
+
+tk.Label(root, text="Metode:").grid(row=0, column=0)
+tk.OptionMenu(root, method_var, "Vigenere", "Playfair", "Hill").grid(row=0, column=1)
+
+tk.Label(root, text="Mode:").grid(row=1, column=0)
+tk.OptionMenu(root, mode_var, "Encrypt", "Decrypt").grid(row=1, column=1)
+
+tk.Label(root, text="Kunci:").grid(row=2, column=0)
+key_entry = tk.Entry(root)
+key_entry.grid(row=2, column=1)
+
+tk.Label(root, text="Input:").grid(row=3, column=0)
+input_text = tk.Text(root, height=10, width=50)
+input_text.grid(row=3, column=1)
+
+tk.Button(root, text="Proses", command=process).grid(row=4, columnspan=2)
+
+tk.Label(root, text="Output:").grid(row=5, column=0)
+output_text = tk.Text(root, height=10, width=50)
+output_text.grid(row=5, column=1)
+
+root.mainloop()
