@@ -141,6 +141,11 @@ def hill_encrypt(plaintext, key):
 def hill_decrypt(ciphertext, key):
     key_matrix = np.array(key).reshape(2, 2)
     det = int(np.round(np.linalg.det(key_matrix))) % 26
+
+    # Cek apakah determinan valid
+    if det == 0 or gcd(det, 26) != 1:
+        raise ValueError("Determinant is not invertible under modulo 26. Please use a different key.")
+
     det_inv = pow(det, -1, 26)
     adjugate_matrix = np.round(det * np.linalg.inv(key_matrix)).astype(int) % 26
     inverse_key_matrix = (det_inv * adjugate_matrix) % 26
@@ -149,12 +154,21 @@ def hill_decrypt(ciphertext, key):
     plaintext = ''.join(chr(p + ord('a')) for p in plaintext_vector.flatten())
     return plaintext
 
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
 def process(method, mode, key, text):
-    if len(key) != 4 or not all(c.isalpha() for c in key):
-        messagebox.showerror("Error", "Kunci harus terdiri dari 4 huruf.")
+    # Hanya ambil huruf dari kunci
+    filtered_key = ''.join(filter(str.isalpha, key))
+    
+    if len(filtered_key) < 4:
+        messagebox.showerror("Error", "Kunci harus terdiri dari minimal 4 huruf.")
         return
 
-    key_matrix = np.array([ord(c) - ord('a') for c in key]).reshape(2, 2)  # Membentuk matriks 2x2 dari kunci
+    # Ambil 4 karakter pertama dari kunci untuk matriks 2x2
+    key_matrix = np.array([ord(c) - ord('a') for c in filtered_key[:4]]).reshape(2, 2)
 
     if method == "Vigenere":
         result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
@@ -164,6 +178,7 @@ def process(method, mode, key, text):
         result = hill_encrypt(text, key_matrix) if mode == "Encrypt" else hill_decrypt(text, key_matrix)
 
     return result
+
 
 
 def upload_file():
