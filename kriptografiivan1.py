@@ -170,6 +170,14 @@ def process(method, mode, key, text):
     # Ambil 4 karakter pertama dari kunci untuk matriks 2x2
     key_matrix = np.array([ord(c) - ord('a') for c in filtered_key[:4]]).reshape(2, 2)
 
+    # Periksa determinan untuk Hill Cipher
+    if method == "Hill":
+        det = int(np.round(np.linalg.det(key_matrix))) % 26
+        if det == 0 or gcd(det, 26) != 1:
+            messagebox.showerror("Error", "Determinant is not invertible under modulo 26. Please use a different key.")
+            return
+
+    # Proses untuk setiap cipher
     if method == "Vigenere":
         result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
     elif method == "Playfair":
@@ -296,7 +304,7 @@ def choose_method(method):
     upload_button = tk.Button(root, text="Upload File", command=lambda: upload_file_action(method))
     upload_button.pack(side=tk.LEFT, padx=5)
 
-    input_button = tk.Button(root, text="Input Langsung", command=lambda: input_text_action(method))
+    input_button = tk.Button(root, text="Input Langsung", command=lambda: input_text_action(method))   
     input_button.pack(side=tk.LEFT, padx=5)
 
 def reset_program():
