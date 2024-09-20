@@ -150,18 +150,21 @@ def hill_decrypt(ciphertext, key):
     return plaintext
 
 def process(method, mode, key, text):
-    if len(key) < 12:
-        messagebox.showerror("Error", "Kunci harus minimal 12 karakter.")
+    if len(key) != 4 or not all(c.isalpha() for c in key):
+        messagebox.showerror("Error", "Kunci harus terdiri dari 4 huruf.")
         return
+
+    key_matrix = np.array([ord(c) - ord('a') for c in key]).reshape(2, 2)  # Membentuk matriks 2x2 dari kunci
 
     if method == "Vigenere":
         result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
     elif method == "Playfair":
         result = playfair_encrypt(text, key) if mode == "Encrypt" else playfair_decrypt(text, key)
     elif method == "Hill":
-        result = hill_encrypt(text, key) if mode == "Encrypt" else hill_decrypt(text, key)
+        result = hill_encrypt(text, key_matrix) if mode == "Encrypt" else hill_decrypt(text, key_matrix)
 
     return result
+
 
 def upload_file():
     file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
@@ -223,12 +226,13 @@ def upload_file_action(method):
     choose_mode(method, text)  # Panggil fungsi untuk memilih mode
  # Panggil fungsi untuk memilih mode
 
-def input_text_action():
+def input_text_action(method):
     global text
     text = simpledialog.askstring("Input Teks", "Masukkan teks:")
     if text is None:
         return
-    choose_mode(method)  # Panggil fungsi untuk memilih mode
+    choose_mode(method, text)  # Panggil fungsi untuk memilih mode
+  # Panggil fungsi untuk memilih mode
 
 def choose_mode(method, text):
     # Menghapus pilihan input sebelumnya
@@ -277,7 +281,7 @@ def choose_method(method):
     upload_button = tk.Button(root, text="Upload File", command=lambda: upload_file_action(method))
     upload_button.pack(side=tk.LEFT, padx=5)
 
-    input_button = tk.Button(root, text="Input Langsung", command=input_text_action)
+    input_button = tk.Button(root, text="Input Langsung", command=lambda: input_text_action(method))
     input_button.pack(side=tk.LEFT, padx=5)
 
 def reset_program():
