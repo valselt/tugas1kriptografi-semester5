@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
+import numpy as np
 
 # Fungsi untuk Vigenere Cipher
 def vigenere_encrypt(plaintext, key):
@@ -53,46 +54,96 @@ def playfair_encrypt(plaintext, key):
     plaintext = plaintext.lower().replace("j", "i")
     plaintext_pairs = []
     i = 0
+    
     while i < len(plaintext):
         a = plaintext[i]
-        b = 'x' if i + 1 == len(plaintext) else plaintext[i + 1]
-        if a == b:
-            plaintext_pairs.append(a + 'x')
+        if not a.isalpha():
             i += 1
+            continue
+        
+        if i + 1 < len(plaintext):
+            b = plaintext[i + 1]
+            if a == b:  # Jika karakter sama, gunakan 'x'
+                b = 'x'
+            else:
+                i += 1
         else:
-            plaintext_pairs.append(a + b)
-            i += 2
+            b = 'x'  # Jika hanya satu karakter tersisa
+
+        plaintext_pairs.append(a + b)
+        i += 2  # Lewati dua karakter
+
     ciphertext = ""
-    for a, b in plaintext_pairs:
+    for item in plaintext_pairs:
+        a, b = item
         row1, col1 = find_position(matrix, a)
         row2, col2 = find_position(matrix, b)
-        if row1 == row2:
-            ciphertext += matrix[row1][(col1 + 1) % 5]
-            ciphertext += matrix[row2][(col2 + 1) % 5]
-        elif col1 == col2:
-            ciphertext += matrix[(row1 + 1) % 5][col1]
-            ciphertext += matrix[(row2 + 1) % 5][col2]
-        else:
-            ciphertext += matrix[row1][col2]
-            ciphertext += matrix[row2][col1]
+
+        if row1 is not None and row2 is not None:
+            if row1 == row2:
+                ciphertext += matrix[row1][(col1 + 1) % 5]
+                ciphertext += matrix[row2][(col2 + 1) % 5]
+            elif col1 == col2:
+                ciphertext += matrix[(row1 + 1) % 5][col1]
+                ciphertext += matrix[(row2 + 1) % 5][col2]
+            else:
+                ciphertext += matrix[row1][col2]
+                ciphertext += matrix[row2][col1]
+
     return ciphertext
 
 def playfair_decrypt(ciphertext, key):
     matrix = create_playfair_matrix(key)
     plaintext = ""
-    for i in range(0, len(ciphertext), 2):
-        a, b = ciphertext[i], ciphertext[i + 1]
+    i = 0
+
+    while i < len(ciphertext):
+        a = ciphertext[i]
+        if a == ' ':
+            plaintext += ' '  # Pertahankan spasi
+            i += 1
+            continue
+        
+        if i + 1 < len(ciphertext):
+            b = ciphertext[i + 1]
+        else:
+            b = 'x'  # Jika hanya ada satu huruf, gantikan dengan 'x'
+
         row1, col1 = find_position(matrix, a)
         row2, col2 = find_position(matrix, b)
-        if row1 == row2:
-            plaintext += matrix[row1][(col1 - 1) % 5]
-            plaintext += matrix[row2][(col2 - 1) % 5]
-        elif col1 == col2:
-            plaintext += matrix[(row1 - 1) % 5][col1]
-            plaintext += matrix[(row2 - 1) % 5][col2]
-        else:
-            plaintext += matrix[row1][col2]
-            plaintext += matrix[row2][col1]
+
+        if row1 is not None and row2 is not None:
+            if row1 == row2:
+                plaintext += matrix[row1][(col1 - 1) % 5]
+                plaintext += matrix[row2][(col2 - 1) % 5]
+            elif col1 == col2:
+                plaintext += matrix[(row1 - 1) % 5][col1]
+                plaintext += matrix[(row2 - 1) % 5][col2]
+            else:
+                plaintext += matrix[row1][col2]
+                plaintext += matrix[row2][col1]
+
+        i += 2  # Lewati dua karakter
+
+    return plaintext
+
+# Fungsi untuk Hill Cipher
+def hill_encrypt(plaintext, key):
+    key_matrix = np.array(key).reshape(2, 2)
+    plaintext_vector = np.array([ord(c) - ord('a') for c in plaintext.lower() if c.isalpha()]).reshape(-1, 2)
+    ciphertext_vector = (plaintext_vector @ key_matrix) % 26
+    ciphertext = ''.join(chr(c + ord('a')) for c in ciphertext_vector.flatten())
+    return ciphertext
+
+def hill_decrypt(ciphertext, key):
+    key_matrix = np.array(key).reshape(2, 2)
+    det = int(np.round(np.linalg.det(key_matrix))) % 26
+    det_inv = pow(det, -1, 26)
+    adjugate_matrix = np.round(det * np.linalg.inv(key_matrix)).astype(int) % 26
+    inverse_key_matrix = (det_inv * adjugate_matrix) % 26
+    ciphertext_vector = np.array([ord(c) - ord('a') for c in ciphertext.lower() if c.isalpha()]).reshape(-1, 2)
+    plaintext_vector = (ciphertext_vector @ inverse_key_matrix) % 26
+    plaintext = ''.join(chr(p + ord('a')) for p in plaintext_vector.flatten())
     return plaintext
 
 def process(method, mode, key, text):
@@ -104,6 +155,8 @@ def process(method, mode, key, text):
         result = vigenere_encrypt(text, key) if mode == "Encrypt" else vigenere_decrypt(text, key)
     elif method == "Playfair":
         result = playfair_encrypt(text, key) if mode == "Encrypt" else playfair_decrypt(text, key)
+    elif method == "Hill":
+        result = hill_encrypt(text, key) if mode == "Encrypt" else hill_decrypt(text, key)
 
     return result
 
@@ -116,8 +169,12 @@ def upload_file():
     return ""
 
 def main():
-    method = simpledialog.askstring("Metode Enkripsi", "Pilih metode (Vigenere/Playfair):")
-    if method not in ["Vigenere", "Playfair"]:
+    root = tk.Tk()
+    root.withdraw()  # Sembunyikan jendela utama
+
+    # Dropdown untuk memilih metode enkripsi
+    method = simpledialog.askstring("Metode Enkripsi", "Pilih metode (Vigenere, Playfair, Hill):")
+    if method not in ["Vigenere", "Playfair", "Hill"]:
         messagebox.showerror("Error", "Metode tidak valid.")
         return
 
@@ -126,6 +183,7 @@ def main():
         messagebox.showerror("Error", "Mode tidak valid.")
         return
 
+    # Meminta pengguna memasukkan kunci mereka sendiri
     key = simpledialog.askstring("Kunci", "Masukkan kunci (minimal 12 karakter):")
     if key is None or len(key) < 12:
         messagebox.showerror("Error", "Kunci tidak valid.")
@@ -160,8 +218,7 @@ def main():
         else:
             messagebox.showinfo("Hasil", f"Hasil:\n{result}")
 
-# GUI Setup
-root = tk.Tk()
-root.withdraw()  # Sembunyikan jendela utama
+    root.mainloop()
+
+# Menjalankan aplikasi
 main()
-root.mainloop()
