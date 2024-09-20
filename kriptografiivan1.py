@@ -65,13 +65,15 @@ def playfair_encrypt(plaintext, key):
             b = plaintext[i + 1]
             if a == b:  # Jika karakter sama, gunakan 'x'
                 b = 'x'
+                plaintext_pairs.append(a + b)
+                i += 1  # Lewati satu karakter
             else:
-                i += 1
+                plaintext_pairs.append(a + b)
+                i += 2  # Lewati dua karakter
         else:
-            b = 'x'  # Jika hanya satu karakter tersisa
-
-        plaintext_pairs.append(a + b)
-        i += 2  # Lewati dua karakter
+            # Jika hanya satu karakter tersisa, tambahkan 'x'
+            plaintext_pairs.append(a + 'x')
+            i += 1
 
     ciphertext = ""
     for item in plaintext_pairs:
@@ -99,8 +101,8 @@ def playfair_decrypt(ciphertext, key):
 
     while i < len(ciphertext):
         a = ciphertext[i]
-        if a == ' ':
-            plaintext += ' '  # Pertahankan spasi
+        if not a.isalpha():
+            plaintext += a  # Pertahankan karakter non-alfabet
             i += 1
             continue
         
@@ -126,6 +128,7 @@ def playfair_decrypt(ciphertext, key):
         i += 2  # Lewati dua karakter
 
     return plaintext
+
 
 # Fungsi untuk Hill Cipher
 def hill_encrypt(plaintext, key):
