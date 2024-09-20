@@ -178,13 +178,10 @@ def run_encryption(method, key, text):
                 with open(output_file, 'w') as file:
                     file.write(result)
                 messagebox.showinfo("Info", "Hasil telah disimpan.")
-
-                # Tambahkan popup untuk mengulang atau keluar
-                repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
-                if repeat:
-                    reset_program()  # Fungsi untuk mengatur ulang tampilan
-                else:
-                    root.quit()  # Keluar dari aplikasi
+            else:
+                messagebox.showerror("Error", "Gagal menyimpan hasil.")
+        else:
+            messagebox.showinfo("Hasil", f"Hasil:\n{result}")
 
 def run_decryption(method, key, text):
     result = process(method, "Decrypt", key, text)
@@ -196,13 +193,10 @@ def run_decryption(method, key, text):
                 with open(output_file, 'w') as file:
                     file.write(result)
                 messagebox.showinfo("Info", "Hasil telah disimpan.")
-
-                # Tambahkan popup untuk mengulang atau keluar
-                repeat = messagebox.askyesno("Ulang Program", "Apakah Anda ingin mengulang program?")
-                if repeat:
-                    reset_program()  # Fungsi untuk mengatur ulang tampilan
-                else:
-                    root.quit()  # Keluar dari aplikasi
+            else:
+                messagebox.showerror("Error", "Gagal menyimpan hasil.")
+        else:
+            messagebox.showinfo("Hasil", f"Hasil:\n{result}")
 
 def upload_file_action(method):
     text = upload_file()  # Mengambil konten dari file
@@ -269,12 +263,6 @@ def choose_method(method):
 
     input_button = tk.Button(root, text="Input Langsung", command=input_text_action)
     input_button.pack(side=tk.LEFT, padx=5)
-
-def reset_program():
-    for widget in root.pack_slaves():
-        widget.destroy()  # Hapus semua widget di jendela
-    main()  # Jalankan kembali fungsi main untuk memulai ulang aplikasi
-
 
 def main():
     global root, welcome_label  # Menandai root sebagai variabel global
